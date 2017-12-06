@@ -51,7 +51,7 @@ public class MIQEventUtils {
 
         if (SERVER_TYPES.contains(resourceType)) {
             String eventId = RESOURCE_ADDED + "_" + cp.toString();
-            String message = "Added: " + resourceType;
+            String message = String.format("Added %s: %s", resourceType, getResource(cp));
 
             utils.addEvent(eventId, true, cp, "Inventory Change", message, "hawkular_event",
                     "MiddlewareServer", message);
@@ -67,11 +67,21 @@ public class MIQEventUtils {
                     "Required Property [resourcePath] is missing or is an invalid CanonicalPath: " + e.getMessage());
         }
         if (availType.equals(SERVER_AVAILABILITY_NAME)) {
-            String message = "Avail change [" + newAvail + "]: " + availType;
+            String message = String.format("Avail change [%s]: %s [%s]", availType, getResource(cp), newAvail);
 
             utils.addEvent(null, false, cp, "Inventory Change", message, "hawkular_event",
                     "MiddlewareServer", message);
         }
+    }
+
+    private String getResource(CanonicalPath cp) {
+        if ( null == cp || null == cp.ids().getResourcePath() ) {
+            return "";
+        }
+        String rp = cp.ids().getResourcePath().toString();
+        rp = rp.startsWith("r;") ? rp.substring(2) : rp;  // remove leading "r;"
+        rp = rp.replace("~~", "");                        // remove [typically trailing] occurences of ~~
+        return rp;
     }
 
 }
